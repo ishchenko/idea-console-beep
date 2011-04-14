@@ -1,0 +1,26 @@
+<idea-plugin version="2">
+
+    <name>Console Beep</name>
+    <description>Play a sound when a certain text appears in console</description>
+    <version>0.1</version>
+    <vendor>Max Ishchenko</vendor>
+    <idea-version since-build="103.255"/>
+
+    <project-components>
+        <component>
+            <implementation-class>net.ishchenko.consolebeep.BeepProjectComponent</implementation-class>
+        </component>
+    </project-components>
+
+    <actions>
+        <action id="ConsoleBeep.AddSelection" class="net.ishchenko.consolebeep.BeepOnThatAction" text="Beep on That">
+            <add-to-group group-id="ConsoleView.PopupMenu" anchor="last"/>
+        </action>
+    </actions>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <consoleFilterProvider implementation="net.ishchenko.consolebeep.BeepFilterProvider"/>
+    </extensions>
+
+
+</idea-plugin>
