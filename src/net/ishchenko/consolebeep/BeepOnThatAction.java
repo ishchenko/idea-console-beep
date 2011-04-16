@@ -21,6 +21,7 @@ public class BeepOnThatAction extends AnAction {
 
         boolean enabled = editor != null &&
                 editor.getSelectionModel().hasSelection() &&
+                editor.getSelectionModel().getSelectedText().length() > 1 &&
                 editor.getSelectionModel().getSelectionStartPosition().line == editor.getSelectionModel().getSelectionEndPosition().line;
 
         e.getPresentation().setEnabled(enabled);
@@ -30,11 +31,10 @@ public class BeepOnThatAction extends AnAction {
     @Override
     public void actionPerformed(AnActionEvent e) {
 
-        BeepProjectComponent component = e.getData(PlatformDataKeys.PROJECT).getComponent(BeepProjectComponent.class);
         SelectionModel selectionModel = e.getData(PlatformDataKeys.EDITOR).getSelectionModel();
 
         if (selectionModel.hasSelection()) {
-            component.setPattern(selectionModel.getSelectedText());
+            Beeper.getInstance(e.getData(PlatformDataKeys.PROJECT)).addDefaultBeep(selectionModel.getSelectedText());
         }
 
     }

@@ -15,30 +15,7 @@ public class BeepFilterProvider implements ConsoleFilterProvider {
 
     @NotNull
     public Filter[] getDefaultFilters(@NotNull Project project) {
-
-        BeepProjectComponent component = project.getComponent(BeepProjectComponent.class);
-
-        return new Filter[]{new BeepFilter(component.getPattern(), component.getBeeper())};
-
-    }
-
-    public static class BeepFilter implements Filter {
-
-        private final String pattern;
-        private final Beeper beeper;
-
-        public BeepFilter(String pattern, Beeper beeper) {
-            this.pattern = pattern;
-            this.beeper = beeper;
-        }
-
-        public Result applyFilter(String line, int entireLength) {
-            if (pattern != null && line.contains(pattern)) {
-                beeper.beep(pattern);
-            }
-            return null;
-        }
-
+        return Beeper.getInstance(project).getFilters();
     }
 
 }

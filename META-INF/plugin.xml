@@ -6,12 +6,6 @@
     <vendor>Max Ishchenko</vendor>
     <idea-version since-build="103.255"/>
 
-    <project-components>
-        <component>
-            <implementation-class>net.ishchenko.consolebeep.BeepProjectComponent</implementation-class>
-        </component>
-    </project-components>
-
     <actions>
         <action id="ConsoleBeep.AddSelection" class="net.ishchenko.consolebeep.BeepOnThatAction" text="Beep on That">
             <add-to-group group-id="ConsoleView.PopupMenu" anchor="last"/>
@@ -20,7 +14,7 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <consoleFilterProvider implementation="net.ishchenko.consolebeep.BeepFilterProvider"/>
+        <projectService serviceInterface="net.ishchenko.consolebeep.Beeper" serviceImplementation="net.ishchenko.consolebeep.Beeper"/>
     </extensions>
-
 
 </idea-plugin>
