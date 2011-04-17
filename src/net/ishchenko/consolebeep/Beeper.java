@@ -57,10 +57,10 @@ public class Beeper implements PersistentStateComponent<BeepSettings> {
 
     private void tryLine(String line) {
 
-        for (String pattern : state.getPatternSounds().keySet()) {
-            if (line.contains(pattern)) {
-                BeepSound beepSound = sounds.get(state.getPatternSound(pattern));
-                if (beepSound != null) {
+        for (BeepSettings.PatternBeep pattern : state.getSettings()) {
+            if (line.contains(pattern.getPattern())) {
+                BeepSound beepSound = sounds.get(pattern.getBeep());
+                if (beepSound != null && pattern.isEnabled()) {
                     doBeep(beepSound);
                     break; //beep once per line
                 }
