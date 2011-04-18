@@ -3,11 +3,17 @@ package net.ishchenko.consolebeep;
 import com.intellij.openapi.options.BaseConfigurable;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Pair;
 import org.jetbrains.annotations.Nls;
 
 import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,7 +39,11 @@ public class BeepSettingsConfigurable extends BaseConfigurable {
     }
 
     public JComponent createComponent() {
-        return panel = new JPanel();
+        panel = new JPanel();
+        panel.setBorder(BorderFactory.createEtchedBorder());
+        panel.setLayout(new GridBagLayout());
+        panel.setAlignmentY(Component.TOP_ALIGNMENT);
+        return panel;
     }
 
     public void apply() throws ConfigurationException {
@@ -41,7 +51,7 @@ public class BeepSettingsConfigurable extends BaseConfigurable {
         BeepSettings settings = new BeepSettings();
         List<BeepSettings.PatternBeep> beeps = new ArrayList<BeepSettings.PatternBeep>();
         for (PatterBeepControls field : fields) {
-            beeps.add(new BeepSettings.PatternBeep(field.patternField.getText(), (String) field.beepType.getModel().getSelectedItem(), field.enabledCheckbox.isSelected()));
+            beeps.add(new BeepSettings.PatternBeep(field.patternField.getText(), (String) field.beepTypeCombo.getModel().getSelectedItem(), field.enabledCheckbox.isSelected()));
         }
         settings.setSettings(beeps);
 
@@ -52,22 +62,36 @@ public class BeepSettingsConfigurable extends BaseConfigurable {
     public void reset() {
 
         panel.removeAll();
+
+        List<BeepSettings.PatternBeep> settings = Beeper.getInstance(project).getState().getSettings();
+        GridBagConstraints c = new GridBagConstraints();
         fields = new ArrayList<PatterBeepControls>();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        for (BeepSettings.PatternBeep beep : Beeper.getInstance(project).getState().getSettings()) {
-            PatterBeepControls controls = new PatterBeepControls(
-                    new JTextField(beep.getPattern(), 15),
-                    new JComboBox(new Object[]{beep.getBeep()}),
-                    new JCheckBox((String) null, beep.isEnabled())
-            );
+
+        int row = 0;
+
+        for (BeepSettings.PatternBeep beep : settings) {
+
+            final PatterBeepControls controls = new PatterBeepControls(beep);
             fields.add(controls);
-            JPanel line = new JPanel();
-            line.add(controls.patternField);
-            line.add(controls.beepType);
-            line.add(controls.enabledCheckbox);
-            panel.add(line);
-            panel.add(Box.createHorizontalGlue());
+
+            c.anchor = GridBagConstraints.PAGE_START;
+            c.gridx = 0;
+            c.gridy = row;
+            panel.add(controls.enabledCheckbox, c);
+            c.gridx = 1;
+            c.gridy = row;
+            panel.add(controls.patternField, c);
+            c.gridx = 2;
+            c.gridy = row;
+            panel.add(controls.beepTypeCombo, c);
+            c.gridx = 3;
+            c.gridy = row;
+            panel.add(controls.removeButton, c);
+
+            row++;
+
         }
+
 
     }
 
@@ -90,13 +114,41 @@ public class BeepSettingsConfigurable extends BaseConfigurable {
     private class PatterBeepControls {
 
         JTextField patternField;
-        JComboBox beepType;
+        JComboBox beepTypeCombo;
         JCheckBox enabledCheckbox;
+        JButton removeButton;
 
-        private PatterBeepControls(JTextField patternField, JComboBox beepType, JCheckBox enabledCheckbox) {
-            this.patternField = patternField;
-            this.beepType = beepType;
-            this.enabledCheckbox = enabledCheckbox;
+        public PatterBeepControls(BeepSettings.PatternBeep beep) {
+
+            patternField = new JTextField(beep.getPattern(), 15);
+            patternField.setEnabled(beep.isEnabled());
+
+            beepTypeCombo = new JComboBox(new Object[]{beep.getBeep()});
+            Dimension dimension = beepTypeCombo.getPreferredSize();
+            dimension.width = 100;
+            beepTypeCombo.setPreferredSize(dimension);
+            beepTypeCombo.setEnabled(beep.isEnabled());
+
+            enabledCheckbox = new JCheckBox((String) null, beep.isEnabled());
+            enabledCheckbox.addItemListener(new ItemListener() {
+                public void itemStateChanged(ItemEvent e) {
+                    patternField.setEnabled(enabledCheckbox.isSelected());
+                    beepTypeCombo.setEnabled(enabledCheckbox.isSelected());
+                }
+            });
+
+            removeButton = new JButton("Remove");
+            removeButton.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    fields.remove(PatterBeepControls.this);
+                    panel.remove(patternField);
+                    panel.remove(beepTypeCombo);
+                    panel.remove(enabledCheckbox);
+                    panel.remove(removeButton);
+                    panel.repaint();
+                }
+            });
+
         }
     }
 }

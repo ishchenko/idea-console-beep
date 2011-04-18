@@ -14,7 +14,7 @@ public class BeepSettings {
     private volatile List<PatternBeep> settings = new ArrayList<PatternBeep>();
 
     public synchronized void addPatternSound(String pattern, String soundId) {
-        PatternBeep candidate = new PatternBeep(pattern, soundId, false);
+        PatternBeep candidate = new PatternBeep(pattern, soundId, true);
         if (!settings.contains(candidate)) {
             settings.add(candidate);
         }
