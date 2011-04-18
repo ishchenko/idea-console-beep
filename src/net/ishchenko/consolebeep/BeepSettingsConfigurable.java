@@ -41,7 +41,7 @@ public class BeepSettingsConfigurable extends BaseConfigurable {
     public JComponent createComponent() {
         panel = new JPanel();
         panel.setBorder(BorderFactory.createEtchedBorder());
-        panel.setLayout(new GridBagLayout());
+        panel.setLayout(new BorderLayout());
         panel.setAlignmentY(Component.TOP_ALIGNMENT);
         return panel;
     }
@@ -64,31 +64,23 @@ public class BeepSettingsConfigurable extends BaseConfigurable {
         panel.removeAll();
 
         List<BeepSettings.PatternBeep> settings = Beeper.getInstance(project).getState().getSettings();
-        GridBagConstraints c = new GridBagConstraints();
         fields = new ArrayList<PatterBeepControls>();
 
-        int row = 0;
+        JPanel p = new JPanel();
+        p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
+        panel.add(p, BorderLayout.NORTH);
 
         for (BeepSettings.PatternBeep beep : settings) {
 
-            final PatterBeepControls controls = new PatterBeepControls(beep);
+            JPanel rowPanel = new JPanel();
+            final PatterBeepControls controls = new PatterBeepControls(beep, rowPanel);
             fields.add(controls);
 
-            c.anchor = GridBagConstraints.PAGE_START;
-            c.gridx = 0;
-            c.gridy = row;
-            panel.add(controls.enabledCheckbox, c);
-            c.gridx = 1;
-            c.gridy = row;
-            panel.add(controls.patternField, c);
-            c.gridx = 2;
-            c.gridy = row;
-            panel.add(controls.beepTypeCombo, c);
-            c.gridx = 3;
-            c.gridy = row;
-            panel.add(controls.removeButton, c);
-
-            row++;
+            rowPanel.add(controls.enabledCheckbox);
+            rowPanel.add(controls.patternField);
+            rowPanel.add(controls.beepTypeCombo);
+            rowPanel.add(controls.removeButton);
+            p.add(rowPanel);
 
         }
 
@@ -117,8 +109,9 @@ public class BeepSettingsConfigurable extends BaseConfigurable {
         JComboBox beepTypeCombo;
         JCheckBox enabledCheckbox;
         JButton removeButton;
+        private JPanel rowPanel;
 
-        public PatterBeepControls(BeepSettings.PatternBeep beep) {
+        public PatterBeepControls(BeepSettings.PatternBeep beep, final JPanel rowPanel) {
 
             patternField = new JTextField(beep.getPattern(), 15);
             patternField.setEnabled(beep.isEnabled());
@@ -141,11 +134,11 @@ public class BeepSettingsConfigurable extends BaseConfigurable {
             removeButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     fields.remove(PatterBeepControls.this);
-                    panel.remove(patternField);
-                    panel.remove(beepTypeCombo);
-                    panel.remove(enabledCheckbox);
-                    panel.remove(removeButton);
-                    panel.repaint();
+                    rowPanel.remove(patternField);
+                    rowPanel.remove(beepTypeCombo);
+                    rowPanel.remove(enabledCheckbox);
+                    rowPanel.remove(removeButton);
+                    rowPanel.repaint();
                 }
             });
 
