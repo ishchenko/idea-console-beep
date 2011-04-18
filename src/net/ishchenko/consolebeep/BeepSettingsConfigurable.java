@@ -4,6 +4,7 @@ import com.intellij.openapi.options.BaseConfigurable;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.TableUtil;
+import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.table.JBTable;
 import com.intellij.util.ui.ComboBoxTableCellEditor;
 import org.jetbrains.annotations.Nls;
@@ -42,6 +43,7 @@ public class BeepSettingsConfigurable extends BaseConfigurable {
     public JComponent createComponent() {
 
         JPanel panel = new JPanel(new BorderLayout());
+        panel.setBorder(BorderFactory.createEtchedBorder());
         JPanel buttonsPanel = new JPanel();
         JButton removeButton = new JButton("Remove");
         removeButton.addActionListener(new ActionListener() {
@@ -58,10 +60,11 @@ public class BeepSettingsConfigurable extends BaseConfigurable {
 
         JPanel tablePanel = new JPanel(new BorderLayout());
         table = new JBTable();
-        table.setBorder(BorderFactory.createEtchedBorder());
+        table.setRowHeight(25);
         tablePanel.add(table.getTableHeader(), BorderLayout.NORTH);
         tablePanel.add(table, BorderLayout.CENTER);
-        panel.add(tablePanel, BorderLayout.CENTER);
+
+        panel.add(new JBScrollPane(tablePanel), BorderLayout.CENTER);
 
         return panel;
 
@@ -79,6 +82,8 @@ public class BeepSettingsConfigurable extends BaseConfigurable {
 
         table.setModel(new BeepSettingsTableModel(Beeper.getInstance(project).getState().getSettings()));
         table.getColumnModel().getColumn(2).setCellEditor(new DefaultCellEditor(new JComboBox(new String[]{"ding"})));
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        table.getColumnModel().getColumn(0).setMaxWidth(50);
 
     }
 
