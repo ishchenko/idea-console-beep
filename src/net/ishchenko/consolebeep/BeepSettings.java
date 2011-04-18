@@ -28,7 +28,7 @@ public class BeepSettings {
         this.settings = settings;
     }
 
-    public static class PatternBeep {
+    public static class PatternBeep implements Cloneable {
 
         private String pattern;
         private String beep;
@@ -82,6 +82,15 @@ public class BeepSettings {
         @Override
         public int hashCode() {
             return pattern != null ? pattern.hashCode() : 0;
+        }
+
+        @Override
+        protected PatternBeep clone() {
+            try {
+                return (PatternBeep) super.clone();
+            } catch (CloneNotSupportedException e) {
+                throw new AssertionError(e);
+            }
         }
     }
 

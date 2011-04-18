@@ -3,12 +3,14 @@ package net.ishchenko.consolebeep;
 import com.intellij.openapi.options.BaseConfigurable;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;
+import com.intellij.ui.TableUtil;
+import com.intellij.ui.table.JBTable;
+import com.intellij.util.ui.ComboBoxTableCellEditor;
 import org.jetbrains.annotations.Nls;
 
 import javax.swing.*;
-import javax.swing.border.Border;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableColumnModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -26,8 +28,7 @@ import java.util.List;
 public class BeepSettingsConfigurable extends BaseConfigurable {
 
     private Project project;
-    private JComponent panel;
-    private List<PatterBeepControls> fields;
+    private JBTable table;
 
     public BeepSettingsConfigurable(Project project) {
         this.project = project;
@@ -39,51 +40,45 @@ public class BeepSettingsConfigurable extends BaseConfigurable {
     }
 
     public JComponent createComponent() {
-        panel = new JPanel();
-        panel.setBorder(BorderFactory.createEtchedBorder());
-        panel.setLayout(new BorderLayout());
-        panel.setAlignmentY(Component.TOP_ALIGNMENT);
+
+        JPanel panel = new JPanel(new BorderLayout());
+        JPanel buttonsPanel = new JPanel();
+        JButton removeButton = new JButton("Remove");
+        removeButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                TableUtil.stopEditing(table);
+                int index = table.getSelectionModel().getMinSelectionIndex();
+                if (index != -1) {
+                    ((BeepSettingsTableModel) table.getModel()).removeRow(index);
+                }
+            }
+        });
+        buttonsPanel.add(removeButton);
+        panel.add(buttonsPanel, BorderLayout.NORTH);
+
+        JPanel tablePanel = new JPanel(new BorderLayout());
+        table = new JBTable();
+        table.setBorder(BorderFactory.createEtchedBorder());
+        tablePanel.add(table.getTableHeader(), BorderLayout.NORTH);
+        tablePanel.add(table, BorderLayout.CENTER);
+        panel.add(tablePanel, BorderLayout.CENTER);
+
         return panel;
+
     }
 
     public void apply() throws ConfigurationException {
 
         BeepSettings settings = new BeepSettings();
-        List<BeepSettings.PatternBeep> beeps = new ArrayList<BeepSettings.PatternBeep>();
-        for (PatterBeepControls field : fields) {
-            beeps.add(new BeepSettings.PatternBeep(field.patternField.getText(), (String) field.beepTypeCombo.getModel().getSelectedItem(), field.enabledCheckbox.isSelected()));
-        }
-        settings.setSettings(beeps);
-
+        settings.setSettings(((BeepSettingsTableModel) table.getModel()).settings);
         Beeper.getInstance(project).loadState(settings);
 
     }
 
     public void reset() {
 
-        panel.removeAll();
-
-        List<BeepSettings.PatternBeep> settings = Beeper.getInstance(project).getState().getSettings();
-        fields = new ArrayList<PatterBeepControls>();
-
-        JPanel p = new JPanel();
-        p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
-        panel.add(p, BorderLayout.NORTH);
-
-        for (BeepSettings.PatternBeep beep : settings) {
-
-            JPanel rowPanel = new JPanel();
-            final PatterBeepControls controls = new PatterBeepControls(beep, rowPanel);
-            fields.add(controls);
-
-            rowPanel.add(controls.enabledCheckbox);
-            rowPanel.add(controls.patternField);
-            rowPanel.add(controls.beepTypeCombo);
-            rowPanel.add(controls.removeButton);
-            p.add(rowPanel);
-
-        }
-
+        table.setModel(new BeepSettingsTableModel(Beeper.getInstance(project).getState().getSettings()));
+        table.getColumnModel().getColumn(2).setCellEditor(new DefaultCellEditor(new JComboBox(new String[]{"ding"})));
 
     }
 
@@ -103,47 +98,75 @@ public class BeepSettingsConfigurable extends BaseConfigurable {
     public void disposeUIResources() {
     }
 
-    private class PatterBeepControls {
+    private class BeepSettingsTableModel extends AbstractTableModel {
 
-        JTextField patternField;
-        JComboBox beepTypeCombo;
-        JCheckBox enabledCheckbox;
-        JButton removeButton;
-        private JPanel rowPanel;
+        private String[] columns = {"Enabled", "Pattern", "Sound"};
 
-        public PatterBeepControls(BeepSettings.PatternBeep beep, final JPanel rowPanel) {
+        private List<BeepSettings.PatternBeep> settings;
 
-            patternField = new JTextField(beep.getPattern(), 15);
-            patternField.setEnabled(beep.isEnabled());
+        public BeepSettingsTableModel(List<BeepSettings.PatternBeep> settings) {
+            this.settings = new ArrayList<BeepSettings.PatternBeep>(settings.size());
+            for (BeepSettings.PatternBeep beep : settings) {
+                this.settings.add(beep.clone());
+            }
+        }
 
-            beepTypeCombo = new JComboBox(new Object[]{beep.getBeep()});
-            Dimension dimension = beepTypeCombo.getPreferredSize();
-            dimension.width = 100;
-            beepTypeCombo.setPreferredSize(dimension);
-            beepTypeCombo.setEnabled(beep.isEnabled());
+        public int getRowCount() {
+            return settings.size();
+        }
 
-            enabledCheckbox = new JCheckBox((String) null, beep.isEnabled());
-            enabledCheckbox.addItemListener(new ItemListener() {
-                public void itemStateChanged(ItemEvent e) {
-                    patternField.setEnabled(enabledCheckbox.isSelected());
-                    beepTypeCombo.setEnabled(enabledCheckbox.isSelected());
-                }
-            });
+        public int getColumnCount() {
+            return 3;
+        }
 
-            removeButton = new JButton("Remove");
-            removeButton.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    fields.remove(PatterBeepControls.this);
-                    rowPanel.remove(patternField);
-                    rowPanel.remove(beepTypeCombo);
-                    rowPanel.remove(enabledCheckbox);
-                    rowPanel.remove(removeButton);
-                    rowPanel.repaint();
-                }
-            });
+        public Object getValueAt(int rowIndex, int columnIndex) {
+            BeepSettings.PatternBeep row = settings.get(rowIndex);
+            if (columnIndex == 0) {
+                return row.isEnabled();
+            } else if (columnIndex == 1) {
+                return row.getPattern();
+            } else if (columnIndex == 2) {
+                return row.getBeep();
+            }
+            return null;
+        }
 
+        @Override
+        public boolean isCellEditable(int rowIndex, int columnIndex) {
+            return rowIndex < settings.size() && columnIndex != 3;
+        }
+
+        @Override
+        public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+            BeepSettings.PatternBeep row = settings.get(rowIndex);
+            if (columnIndex == 0) {
+                row.setEnabled((Boolean) aValue);
+            } else if (columnIndex == 1) {
+                row.setPattern((String) aValue);
+            }
+        }
+
+        @Override
+        public Class<?> getColumnClass(int columnIndex) {
+            if (columnIndex == 0) {
+                return Boolean.class;
+            } else if (columnIndex == 1) {
+                return String.class;
+            }
+            return Object.class;
+        }
+
+        public void removeRow(int index) {
+            settings.remove(index);
+            fireTableDataChanged();
+        }
+
+        @Override
+        public String getColumnName(int column) {
+            return columns[column];
         }
     }
+
 }
 
 
