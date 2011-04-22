@@ -49,6 +49,7 @@ public class Beeper implements PersistentStateComponent<BeepSettings> {
     public Beeper() throws IOException {
         sounds = new HashMap<String, BeepSound>();
         sounds.put(DEFAULT_BEEP_ID, new BeepSound("/ding.wav"));
+        sounds.put("dong", new BeepSound("/dong.wav"));
     }
 
     public void addDefaultBeep(String pattern) {
@@ -106,6 +107,10 @@ public class Beeper implements PersistentStateComponent<BeepSettings> {
 
     public Filter[] getFilters() {
         return filters;
+    }
+
+    public String[] getSoundKeys() {
+        return sounds.keySet().toArray(new String[sounds.size()]);
     }
 
     public BeepSettings getState() {

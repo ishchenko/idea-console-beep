@@ -10,6 +10,8 @@ import com.intellij.util.ui.ComboBoxTableCellEditor;
 import org.jetbrains.annotations.Nls;
 
 import javax.swing.*;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableColumnModel;
 import java.awt.*;
@@ -30,6 +32,7 @@ public class BeepSettingsConfigurable extends BaseConfigurable {
 
     private Project project;
     private JBTable table;
+    private boolean dirty;
 
     public BeepSettingsConfigurable(Project project) {
         this.project = project;
@@ -76,12 +79,22 @@ public class BeepSettingsConfigurable extends BaseConfigurable {
         settings.setSettings(((BeepSettingsTableModel) table.getModel()).settings);
         Beeper.getInstance(project).loadState(settings);
 
+        dirty = false;
+
     }
 
     public void reset() {
 
-        table.setModel(new BeepSettingsTableModel(Beeper.getInstance(project).getState().getSettings()));
-        table.getColumnModel().getColumn(2).setCellEditor(new DefaultCellEditor(new JComboBox(new String[]{"ding"})));
+        Beeper beeper = Beeper.getInstance(project);
+
+        table.setModel(new BeepSettingsTableModel(beeper.getState().getSettings()));
+        table.getModel().addTableModelListener(new TableModelListener() {
+            public void tableChanged(TableModelEvent e) {
+                dirty = true;
+            }
+        });
+
+        table.getColumnModel().getColumn(2).setCellEditor(new DefaultCellEditor(new JComboBox(beeper.getSoundKeys())));
         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         table.getColumnModel().getColumn(0).setMaxWidth(50);
 
@@ -89,7 +102,7 @@ public class BeepSettingsConfigurable extends BaseConfigurable {
 
     @Override
     public boolean isModified() {
-        return true;
+        return dirty;
     }
 
     public Icon getIcon() {
@@ -148,7 +161,12 @@ public class BeepSettingsConfigurable extends BaseConfigurable {
                 row.setEnabled((Boolean) aValue);
             } else if (columnIndex == 1) {
                 row.setPattern((String) aValue);
+            } else if (columnIndex == 2) {
+                row.setBeep((String) aValue);
+            } else {
+                return;
             }
+            fireTableCellUpdated(rowIndex, columnIndex);
         }
 
         @Override
