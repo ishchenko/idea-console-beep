@@ -12,8 +12,8 @@ import javax.sound.sampled.DataLine;
 import javax.sound.sampled.SourceDataLine;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Created by IntelliJ IDEA.
@@ -47,9 +47,11 @@ public class Beeper implements PersistentStateComponent<BeepSettings> {
     };
 
     public Beeper() throws IOException {
-        sounds = new HashMap<String, BeepSound>();
+        sounds = new TreeMap<String, BeepSound>();
         sounds.put(DEFAULT_BEEP_ID, new BeepSound("/ding.wav"));
         sounds.put("dong", new BeepSound("/dong.wav"));
+        sounds.put("chimes", new BeepSound("/chimes.wav"));
+        sounds.put("bell", new BeepSound("/bell.wav"));
     }
 
     public void addDefaultBeep(String pattern) {
