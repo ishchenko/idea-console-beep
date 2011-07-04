@@ -1,9 +1,12 @@
+Console Beep
+-------------
+
 Console Beep is an IntelliJ IDEA/RubyMine/PhpStorm/WebStorm/PyCharm plugin that plays a sound when a certain text appears in console.
-----------------------------------------------------------------------------------------------------------------------------
 
 The motivation is to give a developer some spare time while his application is starting, but give distinct notification that the spare time has ended and it's time to work.
 
 My typical scenario is:
+
 1. Write some code that can not be hotswapped in running VM (provided we do not use JRebel-like tools)
 2. Kill the app and start the app
 3. Wait until it starts
