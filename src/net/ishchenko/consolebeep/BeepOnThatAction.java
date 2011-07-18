@@ -7,6 +7,7 @@ import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.SelectionModel;
 import com.intellij.openapi.project.Project;
+import com.intellij.util.Icons;
 
 /**
  * Created by IntelliJ IDEA.
@@ -32,6 +33,19 @@ public class BeepOnThatAction extends AnAction {
 
         e.getPresentation().setEnabled(enabled);
 
+        e.getPresentation().setIcon(null);
+        if (enabled) {
+            String selectedText = editor.getSelectionModel().getSelectedText();
+            Project project = e.getData(PlatformDataKeys.PROJECT);
+            BeepSettings settings = ServiceManager.getService(project, BeeperProjectComponent.class).getState();
+            for (BeepSettings.PatternBeep patternBeep : settings.getSettings()) {
+                if (patternBeep.getBeep().equals(getSoundId()) && patternBeep.getPattern().equals(selectedText)) {
+                    e.getPresentation().setIcon(Icons.CHECK_ICON);
+                }
+            }
+        }
+
+
     }
 
     @Override
@@ -44,12 +58,15 @@ public class BeepOnThatAction extends AnAction {
 
             if (selectionModel.hasSelection()) {
                 Project project = e.getData(PlatformDataKeys.PROJECT);
-                String soundId = getTemplatePresentation().getText();
-                ServiceManager.getService(project, BeeperProjectComponent.class).getState().addPatternSound(selectionModel.getSelectedText(), soundId);
+                ServiceManager.getService(project, BeeperProjectComponent.class).getState().addPatternSound(selectionModel.getSelectedText(), getSoundId());
             }
 
         }
 
+    }
+
+    private String getSoundId() {
+        return getTemplatePresentation().getText();
     }
 
 }

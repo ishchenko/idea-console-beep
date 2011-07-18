@@ -11,20 +11,19 @@ import java.util.List;
  */
 public class BeepSettings {
 
-    private volatile List<PatternBeep> settings = new ArrayList<PatternBeep>();
+    private List<PatternBeep> settings = new ArrayList<PatternBeep>();
 
     public synchronized void addPatternSound(String pattern, String soundId) {
         PatternBeep candidate = new PatternBeep(pattern, soundId, true);
-        if (!settings.contains(candidate)) {
-            settings.add(candidate);
-        }
+        settings.remove(candidate);
+        settings.add(candidate);
     }
 
-    public List<PatternBeep> getSettings() {
+    public synchronized List<PatternBeep> getSettings() {
         return settings;
     }
 
-    public void setSettings(List<PatternBeep> settings) {
+    public synchronized void setSettings(List<PatternBeep> settings) {
         this.settings = settings;
     }
 
