@@ -1,24 +1,21 @@
 package net.ishchenko.consolebeep;
 
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.options.BaseConfigurable;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.TableUtil;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.table.JBTable;
-import com.intellij.util.ui.ComboBoxTableCellEditor;
 import org.jetbrains.annotations.Nls;
 
 import javax.swing.*;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
-import javax.swing.table.DefaultTableColumnModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -77,7 +74,7 @@ public class BeepSettingsConfigurable extends BaseConfigurable {
 
         BeepSettings settings = new BeepSettings();
         settings.setSettings(((BeepSettingsTableModel) table.getModel()).settings);
-        Beeper.getInstance(project).loadState(settings);
+        ServiceManager.getService(project, BeeperProjectComponent.class).loadState(settings);
 
         dirty = false;
 
@@ -85,16 +82,17 @@ public class BeepSettingsConfigurable extends BaseConfigurable {
 
     public void reset() {
 
-        Beeper beeper = Beeper.getInstance(project);
+        BeeperApplicationComponent beeperApplicationComponent = ServiceManager.getService(BeeperApplicationComponent.class);
+        BeeperProjectComponent beeperProjectComponent = ServiceManager.getService(project, BeeperProjectComponent.class);
 
-        table.setModel(new BeepSettingsTableModel(beeper.getState().getSettings()));
+        table.setModel(new BeepSettingsTableModel(beeperProjectComponent.getState().getSettings()));
         table.getModel().addTableModelListener(new TableModelListener() {
             public void tableChanged(TableModelEvent e) {
                 dirty = true;
             }
         });
 
-        table.getColumnModel().getColumn(2).setCellEditor(new DefaultCellEditor(new JComboBox(beeper.getSoundKeys())));
+        table.getColumnModel().getColumn(2).setCellEditor(new DefaultCellEditor(new JComboBox(beeperApplicationComponent.getSoundKeys())));
         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         table.getColumnModel().getColumn(0).setMaxWidth(50);
 

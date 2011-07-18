@@ -1,7 +1,5 @@
 package net.ishchenko.consolebeep;
 
-import com.intellij.openapi.util.io.StreamUtil;
-
 import java.io.IOException;
 
 /**
@@ -14,8 +12,8 @@ public class BeepSound {
 
     private final byte[] bytes;
 
-    public BeepSound(String filename) throws IOException {
-        bytes = StreamUtil.loadFromStream(getClass().getResourceAsStream(filename));
+    public BeepSound(byte[] bytes) throws IOException {
+        this.bytes = bytes;
     }
 
     public byte[] getBytes() {

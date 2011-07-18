@@ -1,29 +1,33 @@
 <idea-plugin version="2">
 
     <name>Console Beep</name>
-    <description>Play a sound when a certain text appears in console</description>
-    <version>0.1</version>
+    <description>Plays a sound when a certain text appears in console</description>
+    <version>0.2</version>
     <vendor>Max Ishchenko</vendor>
-    <idea-version since-build="103.255"/>
+    <idea-version since-build="107.307"/>
 
     <depends>com.intellij.modules.platform</depends>
 
     <actions>
 
-        <action id="ConsoleBeep.AddSelection" class="net.ishchenko.consolebeep.BeepOnThatAction" text="Beep on That">
+        <group id="ConsoleBeep.BeepActionGroup" popup="true" text="Beep on That">
             <add-to-group group-id="ConsoleView.PopupMenu" anchor="last"/>
-        </action>
-
-        <action id="ConsoleBeep.ViewBeepSettings" class="net.ishchenko.consolebeep.ViewBeepSettingsAction" text="View beep settings" icon="/bell.png">
-            <add-to-group group-id="ConsoleView.PopupMenu" anchor="last"/>
-        </action>
+            <separator/>
+            <action id="ConsoleBeep.ViewBeepSettings" class="net.ishchenko.consolebeep.ViewBeepSettingsAction" text="Console Beep Settings..."/>
+        </group>
 
     </actions>
 
     <extensions defaultExtensionNs="com.intellij">
-        <consoleFilterProvider implementation="net.ishchenko.consolebeep.BeepFilterProvider"/>
-        <projectService serviceInterface="net.ishchenko.consolebeep.Beeper" serviceImplementation="net.ishchenko.consolebeep.Beeper"/>
+        <projectService serviceImplementation="net.ishchenko.consolebeep.BeeperProjectComponent"/>
+        <consoleFilterProvider implementation="net.ishchenko.consolebeep.BeeperProjectComponent$BeepFilterProvider"/>
         <projectConfigurable instance="net.ishchenko.consolebeep.BeepSettingsConfigurable"/>
     </extensions>
+
+    <application-components>
+        <component>
+            <implementation-class>net.ishchenko.consolebeep.BeeperApplicationComponent</implementation-class>
+        </component>
+    </application-components>
 
 </idea-plugin>

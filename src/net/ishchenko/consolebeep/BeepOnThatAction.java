@@ -3,8 +3,10 @@ package net.ishchenko.consolebeep;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.SelectionModel;
+import com.intellij.openapi.project.Project;
 
 /**
  * Created by IntelliJ IDEA.
@@ -13,6 +15,10 @@ import com.intellij.openapi.editor.SelectionModel;
  * Time: 2:13
  */
 public class BeepOnThatAction extends AnAction {
+
+    public BeepOnThatAction(String name) {
+        super(name);
+    }
 
     @Override
     public void update(AnActionEvent e) {
@@ -31,10 +37,17 @@ public class BeepOnThatAction extends AnAction {
     @Override
     public void actionPerformed(AnActionEvent e) {
 
-        SelectionModel selectionModel = e.getData(PlatformDataKeys.EDITOR).getSelectionModel();
+        Editor editor = e.getData(PlatformDataKeys.EDITOR);
+        if (editor != null) {
 
-        if (selectionModel.hasSelection()) {
-            Beeper.getInstance(e.getData(PlatformDataKeys.PROJECT)).addDefaultBeep(selectionModel.getSelectedText());
+            SelectionModel selectionModel = editor.getSelectionModel();
+
+            if (selectionModel.hasSelection()) {
+                Project project = e.getData(PlatformDataKeys.PROJECT);
+                String soundId = getTemplatePresentation().getText();
+                ServiceManager.getService(project, BeeperProjectComponent.class).getState().addPatternSound(selectionModel.getSelectedText(), soundId);
+            }
+
         }
 
     }
