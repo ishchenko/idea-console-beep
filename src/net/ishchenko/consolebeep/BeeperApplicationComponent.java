@@ -12,11 +12,12 @@ import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.DataLine;
 import javax.sound.sampled.SourceDataLine;
-import java.io.*;
-import java.net.URISyntaxException;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentSkipListMap;
 
 /**
  * Created by IntelliJ IDEA.
@@ -26,10 +27,8 @@ import java.util.concurrent.ConcurrentSkipListMap;
  */
 public class BeeperApplicationComponent implements ApplicationComponent {
 
-    private static final String SOUND_FILE_EXTENSION = ".wav";
-
     private final Object beepLock = new Object();
-    private final Map<String, BeepSound> sounds = new ConcurrentSkipListMap<String, BeepSound>();
+    private final Map<String, BeepSound> sounds = Collections.synchronizedMap(new LinkedHashMap<String, BeepSound>());
 
     public void initComponent() {
 
@@ -37,27 +36,12 @@ public class BeeperApplicationComponent implements ApplicationComponent {
 
         try {
 
-            File root = new File(getClass().getResource("/").toURI());
-            File[] soundFiles = root.listFiles(new FilenameFilter() {
-                public boolean accept(File dir, String name) {
-                    return name.endsWith(SOUND_FILE_EXTENSION);
-                }
-            });
-
-            for (File soundFile : soundFiles) {
-
-                FileInputStream fis = null;
-                try {
-                    fis = new FileInputStream(soundFile);
-                    sounds.put(soundFile.getName().substring(0, soundFile.getName().lastIndexOf(SOUND_FILE_EXTENSION)), new BeepSound(StreamUtil.loadFromStream(fis)));
-                } finally {
-                    if (fis != null) fis.close();
-                }
+            for (String soundFileName : StreamUtil.readText(getClass().getResourceAsStream("sounds/sounds.txt")).split("\n")) {
+                sounds.put(soundFileName.substring(0, soundFileName.lastIndexOf(".")), new BeepSound(StreamUtil.loadFromStream(getClass().getResourceAsStream("sounds/" + soundFileName))));
             }
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
+
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            CheckedExceptionsTamer.<RuntimeException>tame(e);
         }
 
         this.sounds.putAll(sounds);
