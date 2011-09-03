@@ -6,6 +6,20 @@
     <vendor>Max Ishchenko</vendor>
     <idea-version since-build="107.307"/>
 
+    <change-notes><![CDATA[
+        <b>0.2</b>
+        <ul>
+            <li>Four sounds</li>
+            <li>Selecting sound type in context menu</li>
+        </ul>
+        <b>0.1</b>
+        <ul>
+            <li>Initial version, single sound</li>
+        </ul>
+    ]]>
+    </change-notes>
+
+
     <depends>com.intellij.modules.platform</depends>
 
     <actions>
