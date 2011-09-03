@@ -3,7 +3,7 @@
     <name>Console Beep</name>
     <description>Plays a sound when a certain text appears in console</description>
     <version>0.2</version>
-    <vendor>Max Ishchenko</vendor>
+    <vendor url="https://github.com/ishchenko/idea-console-beep">Max Ishchenko</vendor>
     <idea-version since-build="107.307"/>
 
     <change-notes><![CDATA[
